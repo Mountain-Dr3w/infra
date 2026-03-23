@@ -1,0 +1,25 @@
+# Enforcer backend service
+# Extends the shared stack: docker compose -f ../docker-compose.yml -f docker-compose.yml up -d
+
+services:
+  enforcer-backend:
+    image: ghcr.io/drewuxdesign/enforcer-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3001}
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 512m
+    cpus: 0.5
+    networks:
+      - default
+
+networks:
+  default:
+    name: infra
+    external: true

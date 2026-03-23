@@ -1,0 +1,11 @@
+# Caddy reverse proxy configuration
+# Installed to /etc/caddy/Caddyfile on the VPS
+
+{$DOMAIN} {
+    reverse_proxy localhost:3001
+}
+
+# Future: frontend
+# app.{$DOMAIN} {
+#     reverse_proxy localhost:8080
+# }
