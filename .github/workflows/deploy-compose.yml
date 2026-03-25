@@ -57,8 +57,7 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/infra
-            sudo mkdir -p /opt/infra/backups
-            sudo chown "$(id -un):$(id -gn)" /opt/infra/backups
+            sudo install -d -o "$(id -un)" -g "$(id -gn)" /opt/infra/backups
 
             echo "=== Authenticating to GHCR ==="
             OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
@@ -70,9 +69,10 @@ jobs:
             # Pre-migration backup
             if [ "${{ inputs.run-migrations }}" = "true" ]; then
                 echo "=== Creating pre-migration database backup ==="
+                BACKUP_FILE="/opt/infra/backups/pre-migrate-$(date +%Y%m%d-%H%M%S).sql"
                 docker compose -f compose/docker-compose.yml exec -T postgres \
                     pg_dump -U enforcer enforcer_dev \
-                    > "/opt/infra/backups/pre-migrate-$(date +%Y%m%d-%H%M%S).sql"
+                    | sudo tee "${BACKUP_FILE}" > /dev/null
 
                 echo "=== Running migrations ==="
                 docker compose \
