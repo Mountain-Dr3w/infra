@@ -36,6 +36,9 @@ on:
         required: true
       DEPLOY_SSH_KEY:
         required: true
+      GHCR_TOKEN:
+        description: 'Token for pulling images from GHCR (pass GITHUB_TOKEN from caller)'
+        required: true
 
 jobs:
   deploy:
@@ -44,17 +47,23 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: GHCR_TOKEN
           script: |
             set -euo pipefail
             cd /opt/infra
             mkdir -p /opt/infra/backups
 
-            echo "=== Pulling new image ==="
+            echo "=== Authenticating to GHCR ==="
             OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${OWNER}" --password-stdin
+
+            echo "=== Pulling new image ==="
             docker pull ghcr.io/${OWNER}/${{ inputs.image-name }}:${{ inputs.image-tag }}
 
             # Pre-migration backup
