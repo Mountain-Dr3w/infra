@@ -44,8 +44,8 @@ bash bootstrap/03-install-caddy.sh
 bash bootstrap/04-setup-secrets.sh
 bash bootstrap/05-setup-cleanup-cron.sh
 
-# Create backups directory
-mkdir -p /opt/infra/backups
+# Create backups directory (owned by deploy user)
+sudo -u deploy mkdir -p /home/deploy/backups
 ```
 
 ### Step 4: Configure Caddy
@@ -110,12 +110,12 @@ docker compose -f compose/docker-compose.yml -f compose/enforcer/docker-compose.
 ### Restore database from backup
 
 ```bash
-# List backups
-ls -la /opt/infra/backups/
+# List backups (stored in deploy user's home dir)
+ls -la /home/deploy/backups/
 
 # Restore
 docker compose -f compose/docker-compose.yml exec -T postgres \
-    psql -U enforcer enforcer_dev < /opt/infra/backups/pre-migrate-TIMESTAMP.sql
+    psql -U enforcer enforcer_dev < /home/deploy/backups/pre-migrate-TIMESTAMP.sql
 ```
 
 ### Check disk usage
