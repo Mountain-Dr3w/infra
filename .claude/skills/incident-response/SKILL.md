@@ -85,7 +85,7 @@ docker system df                      # Docker disk usage
 
 ### Pipeline
 ```bash
-gh run list --repo DrewUXDesign/infra --limit 5    # Recent workflow runs
+gh run list --repo Mountain-Dr3w/infra --limit 5    # Recent workflow runs
 gh run view <run-id> --log-failed                   # Failed job logs
 ```
 

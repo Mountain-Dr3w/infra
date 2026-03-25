@@ -6,7 +6,7 @@ Give a project status update and sync the primer.
 
 2. Fetch the current issues from the GitHub project board:
    ```
-   gh issue list --repo DrewUXDesign/infra --state all --json number,title,state,labels
+   gh issue list --repo Mountain-Dr3w/infra --state all --json number,title,state,labels
    ```
 
 3. Compare the board state against the primer. Identify:

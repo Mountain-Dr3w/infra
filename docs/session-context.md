@@ -6,7 +6,7 @@
 
 ## What Was Built
 
-### Infra Repo: https://github.com/DrewUXDesign/infra
+### Infra Repo: https://github.com/Mountain-Dr3w/infra
 
 A self-hosted dev/test platform and SecRel pipeline. Reusable across projects. Enforcer is the first deployment.
 
@@ -153,7 +153,7 @@ CI Workflow (.github/workflows/ci.yml)
   │   └─ Fails fast on lint/test errors
   │
   ├─ Job: secrel (needs: test)
-  │   ├─ Calls: DrewUXDesign/infra/.github/workflows/secrel.yml@main
+  │   ├─ Calls: Mountain-Dr3w/infra/.github/workflows/secrel.yml@main
   │   │
   │   ├─ Stage 1: Gitleaks (secret detection) ← HARD GATE
   │   ├─ Stage 2: Semgrep (SAST) ← HARD GATE
@@ -162,7 +162,7 @@ CI Workflow (.github/workflows/ci.yml)
   │   └─ Outputs: image-tag (e.g., sha-abc1234)
   │
   └─ Job: deploy (needs: secrel, only on main push)
-      ├─ Calls: DrewUXDesign/infra/.github/workflows/deploy-compose.yml@main
+      ├─ Calls: Mountain-Dr3w/infra/.github/workflows/deploy-compose.yml@main
       ├─ SSH to VPS as deploy user
       ├─ pg_dump (pre-migration backup)
       ├─ npm run migrate (inside container)

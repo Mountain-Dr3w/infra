@@ -23,7 +23,7 @@ Projects call the shared workflow:
 ```yaml
 jobs:
   secrel:
-    uses: DrewUXDesign/infra/.github/workflows/secrel.yml@main
+    uses: Mountain-Dr3w/infra/.github/workflows/secrel.yml@main
     with:
       dockerfile: ./Dockerfile
       image-name: my-app

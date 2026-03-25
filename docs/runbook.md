@@ -34,7 +34,7 @@
 ssh root@YOUR_VPS_IP
 
 # Clone the infra repo
-git clone https://github.com/DrewUXDesign/infra.git /opt/infra
+git clone https://github.com/Mountain-Dr3w/infra.git /opt/infra
 cd /opt/infra
 
 # Run bootstrap scripts in order
