@@ -57,7 +57,8 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/infra
-            mkdir -p /opt/infra/backups
+            sudo mkdir -p /opt/infra/backups
+            sudo chown "$(id -un):$(id -gn)" /opt/infra/backups
 
             echo "=== Authenticating to GHCR ==="
             OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
