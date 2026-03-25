@@ -8,8 +8,8 @@ Read `docs/primer.md` before doing anything. It has the current project state, p
 
 A self-hosted dev/test platform and SecRel (Security Release) pipeline. Deploys projects to a single Hetzner VPS. Enforcer is the first project deployed on it. The repo is designed to be reusable across projects.
 
-**GitHub:** https://github.com/DrewUXDesign/infra
-**Project board:** https://github.com/users/DrewUXDesign/projects/2
+**GitHub:** https://github.com/Mountain-Dr3w/infra
+**Project board:** https://github.com/users/Mountain-Dr3w/projects/2
 
 ## Repo Structure
 
@@ -54,7 +54,7 @@ Internet → Caddy (HTTPS, auto-cert) → localhost:3001 → Docker container (E
                                                     PostgreSQL (127.0.0.1:5432, internal only)
 ```
 
-- **VPS:** Hetzner CX32 — 4 vCPU, 8GB RAM, 80GB disk, Ubuntu 24.04 LTS
+- **VPS:** Hetzner CCX13 — 2 dedicated AMD vCPU, 8GB RAM, 80GB disk, Ubuntu 24.04 LTS (Hillsboro, OR)
 - **Caddy** runs as a system service (not Docker) for simpler networking
 - **Domain env var** set via systemd override at `/etc/systemd/system/caddy.service.d/env.conf`, not `/etc/environment`
 - **PostgreSQL** is shared, one database per project, bound to localhost only
@@ -118,6 +118,6 @@ This repo has custom skills at `.claude/skills/`. Use them when the trigger matc
 The `docs/primer.md` file is the living state document. It gets updated via the `/check-in` command, which reads the GitHub project board, reconciles it with the primer, gives a status report, and writes the updated state back.
 
 When doing significant work in this repo:
-- Check the project board for related issues: `gh project item-list 2 --owner DrewUXDesign`
+- Check the project board for related issues: `gh project item-list 2 --owner Mountain-Dr3w`
 - Reference issue numbers in commits when closing work
 - Run `/check-in` to sync state after completing work

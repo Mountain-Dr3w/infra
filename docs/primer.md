@@ -1,35 +1,41 @@
 # Infra — Project Primer
 
-> Last updated: 2026-03-23
+> Last updated: 2026-03-25
 > Updated by: /check-in
 
 ## Current Status
 
-Phase 1 and Phase 2 code artifacts are **complete and on `main`**. The VPS has **not been provisioned yet** — all Phase 1 issues are blocked on manual setup steps (domain purchase, Hetzner signup, VPS provisioning).
+VPS is **live and bootstrapped**. Phase 1 is nearly complete — issues #1–6 are done, waiting on **#7 (pipeline end-to-end verification)** which is in progress. Phase 2 SecRel pipeline has been fixed for the username change and is being tested.
+
+## Project Board
+
+https://github.com/users/Mountain-Dr3w/projects/2
 
 ## Phase Status
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| **1: Docker Compose** | Code complete, awaiting VPS | Bootstrap scripts, Compose stacks, Caddyfile all on `main` |
-| **2: SecRel Pipeline** | Code complete, awaiting VPS | Shared secrel.yml + deploy-compose.yml workflows on `main` |
-| **3: k3s Migration** | Not started | Blocked on Phase 1 operational |
+| **1: Docker Compose** | In progress (#7 remaining) | VPS live, bootstrap done, Caddy configured, PostgreSQL running. Awaiting first successful pipeline deploy. |
+| **2: SecRel Pipeline** | In progress (testing) | Workflows fixed for lowercase GHCR owner. Awaiting end-to-end verification with #7. |
+| **3: k3s Migration** | Not started | Blocked on Phase 1 completion |
 | **4: Flux GitOps** | Not started | Blocked on Phase 3 |
 
-## Project Board
+## Infrastructure Details
 
-https://github.com/users/DrewUXDesign/projects/2
+| Resource | Value |
+|----------|-------|
+| **VPS** | Hetzner CCX13 — 2 dedicated AMD vCPU, 8GB RAM, 80GB disk |
+| **Location** | Hillsboro, OR (US West) |
+| **IP** | 5.78.201.14 |
+| **OS** | Ubuntu 24.04 LTS |
+| **Domain** | stavepoint.com (Namecheap) |
+| **DNS** | A records: `@` and `*` → 5.78.201.14 |
+| **GitHub username** | Mountain-Dr3w (changed from DrewUXDesign) |
 
 ### Open Issues
 
 #### Phase 1 — VPS Setup (manual)
-- [ ] #1 — Buy a domain (.dev or .io)
-- [ ] #2 — Sign up for Hetzner and add payment method
-- [ ] #3 — Provision VPS on Hetzner (blocked by #2)
-- [ ] #4 — Configure DNS A records (blocked by #1, #3)
-- [ ] #5 — Run bootstrap scripts on VPS (blocked by #3, #4)
-- [ ] #6 — Configure GitHub Actions secrets in Basemark repo (blocked by #5)
-- [ ] #7 — Push test commit to verify full pipeline (blocked by #6)
+- [ ] #7 — Push test commit to verify full pipeline (in progress)
 
 #### Phase 3 — k3s Migration
 - [ ] #8 — Install k3s on VPS (blocked by #7)
@@ -45,23 +51,32 @@ https://github.com/users/DrewUXDesign/projects/2
 
 ### Completed Issues
 
-(none yet)
+- [x] #1 — Buy a domain → stavepoint.com (Namecheap)
+- [x] #2 — Sign up for Hetzner and add payment method
+- [x] #3 — Provision VPS on Hetzner → CCX13 in Hillsboro, OR (shared vCPU not available in US)
+- [x] #4 — Configure DNS A records → Namecheap, @ and * → 5.78.201.14
+- [x] #5 — Run bootstrap scripts on VPS → all 5 scripts completed, Caddy configured
+- [x] #6 — Configure GitHub Actions secrets in Basemark repo → VPS_HOST, VPS_USER, DEPLOY_SSH_KEY
 
 ## What's Ready to Do Now
 
-The only unblocked work is the manual VPS setup sequence. Start with:
-1. **#1** — Buy a domain
-2. **#2** — Sign up for Hetzner
+**#7 — Push test commit to verify full pipeline.** A fresh push to `backend/` in Basemark is needed to trigger the pipeline with the fixed workflows. Once #7 passes, Phase 1 and 2 are complete and Phase 3 work is unblocked.
 
-These two can be done in parallel. Everything else chains from there.
+## Known Issues / Fixes Applied
+
+- **GitHub username change** (DrewUXDesign → Mountain-Dr3w): Broke reusable workflow references in Basemark CI and caused uppercase characters in GHCR image tags. Fixed in both `secrel.yml` and `deploy-compose.yml` by lowercasing `github.repository_owner`.
+- **Basemark CI `paths` filter**: Workflow only triggers on changes to `backend/**` or `.github/workflows/ci.yml`. Frontend paths should be added once frontend exists.
+- **Basemark CI permissions**: Added top-level `permissions: packages: write` to allow SecRel workflow to push to GHCR.
+- **Hetzner US locations**: Shared vCPU (CX) instances are not available in US datacenters. Used dedicated vCPU (CCX13) instead — $13.49/mo vs the planned €7.49/mo for CX32.
 
 ## Recent Decisions
 
 - Image tags: `sha-${GITHUB_SHA::7}` computed once, passed through pipeline
 - Caddy domain: systemd override (not `/etc/environment`)
 - Flux chosen over ArgoCD for Phase 4 (RAM constraints)
-- CX32 VPS from the start to avoid mid-project migration for k3s
+- CCX13 (dedicated) in Hillsboro instead of CX32 (shared) — US locations don't offer shared vCPU
+- RSA-4096 SSH key used (Hetzner didn't accept ed25519)
 
 ## Related Repos
 
-- **Enforcer (Basemark):** First project deployed on this platform. PR #48 added Dockerfile, .dockerignore, and CI workflow that calls this repo's shared SecRel + deploy workflows.
+- **Basemark** (formerly Enforcer): First project deployed on this platform. CI workflow calls this repo's shared SecRel + deploy workflows. Repo: `Mountain-Dr3w/Basemark`
