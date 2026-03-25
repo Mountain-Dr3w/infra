@@ -44,8 +44,8 @@ bash bootstrap/03-install-caddy.sh
 bash bootstrap/04-setup-secrets.sh
 bash bootstrap/05-setup-cleanup-cron.sh
 
-# Create backups directory (owned by deploy user)
-sudo -u deploy mkdir -p /home/deploy/backups
+# Hand ownership to the deploy user so CI/CD can read compose files and write backups
+chown -R deploy:deploy /opt/infra
 ```
 
 ### Step 4: Configure Caddy
