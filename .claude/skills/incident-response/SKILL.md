@@ -111,9 +111,9 @@ docker compose -f compose/docker-compose.yml -f compose/enforcer/docker-compose.
 
 **Restore database from backup:**
 ```bash
-ls -la /opt/infra/backups/   # Find the backup
+ls -la /home/deploy/backups/   # Find the backup
 docker compose -f compose/docker-compose.yml exec -T postgres \
-    psql -U enforcer enforcer_dev < /opt/infra/backups/pre-migrate-TIMESTAMP.sql
+    psql -U enforcer enforcer_dev < /home/deploy/backups/pre-migrate-TIMESTAMP.sql
 ```
 
 ## Post-Incident Checklist
