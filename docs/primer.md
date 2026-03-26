@@ -1,11 +1,11 @@
 # Infra — Project Primer
 
-> Last updated: 2026-03-25
-> Updated by: /check-in
+> Last updated: 2026-03-26
+> Updated by: manual (pipeline debugging session)
 
 ## Current Status
 
-VPS is **live and bootstrapped**. Phase 1 is nearly complete — issues #1–6 are done, waiting on **#7 (pipeline end-to-end verification)** which is in progress. Phase 2 SecRel pipeline has been fixed for the username change and is being tested.
+**Phases 1 and 2 are complete.** The full pipeline (push → test → SecRel → deploy) is verified end-to-end. Basemark is live at `https://stavepoint.com` with auto-deploy on push to main. Phase 3 (k3s migration) is now unblocked.
 
 ## Project Board
 
@@ -15,9 +15,9 @@ https://github.com/users/Mountain-Dr3w/projects/2
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| **1: Docker Compose** | In progress (#7 remaining) | VPS live, bootstrap done, Caddy configured, PostgreSQL running. Awaiting first successful pipeline deploy. |
-| **2: SecRel Pipeline** | In progress (testing) | Workflows fixed for lowercase GHCR owner. Awaiting end-to-end verification with #7. |
-| **3: k3s Migration** | Not started | Blocked on Phase 1 completion |
+| **1: Docker Compose** | **Complete** | VPS live, Caddy with HTTPS, PostgreSQL, Enforcer deployed and healthy. |
+| **2: SecRel Pipeline** | **Complete** | Gitleaks → Semgrep → Docker build → Trivy → Syft → GHCR push → SSH deploy. All gates passing. |
+| **3: k3s Migration** | Not started | Unblocked, ready to begin |
 | **4: Flux GitOps** | Not started | Blocked on Phase 3 |
 
 ## Infrastructure Details
@@ -34,11 +34,8 @@ https://github.com/users/Mountain-Dr3w/projects/2
 
 ### Open Issues
 
-#### Phase 1 — VPS Setup (manual)
-- [ ] #7 — Push test commit to verify full pipeline (in progress)
-
 #### Phase 3 — k3s Migration
-- [ ] #8 — Install k3s on VPS (blocked by #7)
+- [ ] #8 — Install k3s on VPS
 - [ ] #9 — Write Kubernetes manifests for Enforcer (blocked by #8)
 - [ ] #10 — Deploy PostgreSQL as StatefulSet (blocked by #8)
 - [ ] #11 — Replace Caddy with Traefik + cert-manager (blocked by #9)
@@ -57,10 +54,11 @@ https://github.com/users/Mountain-Dr3w/projects/2
 - [x] #4 — Configure DNS A records → Namecheap, @ and * → 5.78.201.14
 - [x] #5 — Run bootstrap scripts on VPS → all 5 scripts completed, Caddy configured
 - [x] #6 — Configure GitHub Actions secrets in Basemark repo → VPS_HOST, VPS_USER, DEPLOY_SSH_KEY
+- [x] #7 — Full pipeline verified end-to-end (2026-03-26). Required fixes: GHCR auth, VPS file ownership, Caddy env.conf syntax.
 
 ## What's Ready to Do Now
 
-**#7 — Push test commit to verify full pipeline.** A fresh push to `backend/` in Basemark is needed to trigger the pipeline with the fixed workflows. Once #7 passes, Phase 1 and 2 are complete and Phase 3 work is unblocked.
+**Phase 3 — k3s Migration.** Start with #8 (install k3s on VPS). All Phase 1/2 blockers are resolved.
 
 ## Known Issues / Fixes Applied
 
@@ -72,6 +70,7 @@ https://github.com/users/Mountain-Dr3w/projects/2
 - **VPS `/opt/infra` owned by root**: The repo was cloned as root during bootstrap, so the deploy user couldn't read `.env`, compose files, or write backups. Fix: `chown -R deploy:deploy /opt/infra` (added to runbook bootstrap steps). Must be run once on existing VPS.
 - **Deploy user has no passwordless sudo**: `01-harden.sh` adds the deploy user to the `sudo` group but sets no password and doesn't configure NOPASSWD. All `sudo` commands fail in non-interactive SSH sessions. Deploy workflow must not use `sudo`.
 - **Pre-migration backups path**: Changed from `/opt/infra/backups/` to `~/backups/` (`/home/deploy/backups/`) since the deploy user owns their home directory.
+- **Caddy env.conf syntax error**: The systemd override file had leftover shell commands (`EOF`, `systemctl daemon-reload && systemctl restart caddy`) pasted as literal text. Caddy ignored the bad lines, DOMAIN env var was empty, so Caddy only listened on HTTP port 80 (no HTTPS). Fixed by rewriting the file with correct content only.
 
 ## Recent Decisions
 
