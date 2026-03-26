@@ -58,7 +58,7 @@ Internet → Caddy (HTTPS, auto-cert) → localhost:3001 → Docker container (E
 - **Caddy** runs as a system service (not Docker) for simpler networking
 - **Domain env var** set via systemd override at `/etc/systemd/system/caddy.service.d/env.conf`, not `/etc/environment`
 - **PostgreSQL** is shared, one database per project, bound to localhost only
-- **Deploy user** created by `01-harden.sh`, has sudo + docker group, used by GitHub Actions (not root)
+- **Deploy user** created by `01-harden.sh`, has docker group, used by GitHub Actions (not root). **No passwordless sudo** — do not use `sudo` in deploy scripts run via SSH.
 
 ### Resource Limits
 
@@ -99,7 +99,9 @@ See `docs/primer.md` for which phases are complete.
 - **Caddy domain:** Systemd override, not `/etc/environment`.
 - **Flux over ArgoCD:** Flux uses ~100-200MB RAM vs ArgoCD's 1-2GB. CX32 can't spare it.
 - **Bootstrap scripts are idempotent:** Safe to re-run, but designed for one-time setup.
-- **Pre-migration backups:** `pg_dump` runs automatically before every deploy with migrations.
+- **Pre-migration backups:** `pg_dump` runs automatically before every deploy with migrations. Stored in `~/backups/` on the VPS (deploy user's home dir).
+- **GHCR auth for deploys:** `deploy-compose.yml` requires a `GHCR_TOKEN` secret. Callers pass `${{ secrets.GITHUB_TOKEN }}`. The VPS runs `docker login ghcr.io` before pulling.
+- **VPS `/opt/infra` ownership:** Must be owned by the deploy user (`chown -R deploy:deploy /opt/infra`). Cloned as root during bootstrap, ownership transferred after.
 
 ## Skills
 

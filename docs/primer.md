@@ -68,6 +68,10 @@ https://github.com/users/Mountain-Dr3w/projects/2
 - **Basemark CI `paths` filter**: Workflow only triggers on changes to `backend/**` or `.github/workflows/ci.yml`. Frontend paths should be added once frontend exists.
 - **Basemark CI permissions**: Added top-level `permissions: packages: write` to allow SecRel workflow to push to GHCR.
 - **Hetzner US locations**: Shared vCPU (CX) instances are not available in US datacenters. Used dedicated vCPU (CCX13) instead — $13.49/mo vs the planned €7.49/mo for CX32.
+- **GHCR pull unauthorized on VPS**: The deploy workflow SSHes into the VPS and runs `docker pull`, but GHCR packages are private by default. Fixed by adding a `GHCR_TOKEN` secret to `deploy-compose.yml` — callers pass `${{ secrets.GITHUB_TOKEN }}`. The VPS runs `docker login ghcr.io` before pulling.
+- **VPS `/opt/infra` owned by root**: The repo was cloned as root during bootstrap, so the deploy user couldn't read `.env`, compose files, or write backups. Fix: `chown -R deploy:deploy /opt/infra` (added to runbook bootstrap steps). Must be run once on existing VPS.
+- **Deploy user has no passwordless sudo**: `01-harden.sh` adds the deploy user to the `sudo` group but sets no password and doesn't configure NOPASSWD. All `sudo` commands fail in non-interactive SSH sessions. Deploy workflow must not use `sudo`.
+- **Pre-migration backups path**: Changed from `/opt/infra/backups/` to `~/backups/` (`/home/deploy/backups/`) since the deploy user owns their home directory.
 
 ## Recent Decisions
 
