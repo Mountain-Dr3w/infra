@@ -100,6 +100,7 @@ jobs:
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
+          trivyignores: .trivyignore
 
       - name: 'Syft: Generate SBOM'
         uses: anchore/sbom-action@v0
