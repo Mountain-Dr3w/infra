@@ -82,6 +82,7 @@ jobs:
             fi
 
             echo "=== Updating image tag ==="
+            sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ inputs.image-tag }}/" compose/.env
             export IMAGE_TAG="${{ inputs.image-tag }}"
 
             echo "=== Restarting service ==="
