@@ -75,7 +75,7 @@ jobs:
                     > "${BACKUP_FILE}"
 
                 echo "=== Running migrations ==="
-                docker compose \
+                IMAGE_TAG="${{ inputs.image-tag }}" docker compose \
                     -f compose/docker-compose.yml \
                     -f compose/${{ inputs.compose-file }} \
                     run --rm ${{ inputs.service-name }} ${{ inputs.migration-command }}
