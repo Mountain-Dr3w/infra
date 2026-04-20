@@ -1,0 +1,90 @@
+# Velveteen app + worker
+# Extends the shared stack: docker compose -f ../docker-compose.yml -f docker-compose.yml up -d
+
+services:
+  velveteen-app:
+    image: ghcr.io/mountain-dr3w/velveteen:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DATABASE_URL: ${VELVETEEN_DATABASE_URL}
+      AUTH_SECRET: ${VELVETEEN_AUTH_SECRET}
+      AUTH_URL: https://velveteen.sh
+      AUTH_GITHUB_ID: ${VELVETEEN_AUTH_GITHUB_ID}
+      AUTH_GITHUB_SECRET: ${VELVETEEN_AUTH_GITHUB_SECRET}
+      ANTHROPIC_API_KEY: ${VELVETEEN_ANTHROPIC_API_KEY}
+      ENV_ENCRYPTION_KEY: ${VELVETEEN_ENV_ENCRYPTION_KEY}
+      USER_POSTGRES_ADMIN_URL: ${USER_POSTGRES_ADMIN_URL}
+      DOMAIN: velveteen.sh
+      BETA_INVITE_CODE: ${BETA_INVITE_CODE}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 512m
+    cpus: 1.0
+    networks:
+      - default
+
+  velveteen-worker:
+    image: ghcr.io/mountain-dr3w/velveteen:${IMAGE_TAG:-latest}
+    command: ["node", "worker.js"]
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${VELVETEEN_DATABASE_URL}
+      ANTHROPIC_API_KEY: ${VELVETEEN_ANTHROPIC_API_KEY}
+      ENV_ENCRYPTION_KEY: ${VELVETEEN_ENV_ENCRYPTION_KEY}
+      USER_POSTGRES_ADMIN_URL: ${USER_POSTGRES_ADMIN_URL}
+      DOMAIN: velveteen.sh
+      BETA_INVITE_CODE: ${BETA_INVITE_CODE}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      user-postgres:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/deploys:/tmp/deploys
+      - /etc/caddy/sites:/etc/caddy/sites
+    mem_limit: 1g
+    cpus: 1.0
+    networks:
+      - default
+
+  # Shared Postgres instance for user-app databases. Separate from the main
+  # `postgres` service (which holds Velveteen's own operational data) to keep
+  # the trust boundary clean. Attached to both the `infra` network (so
+  # velveteen-worker can CREATE USER/DATABASE as admin) and `velveteen-network`
+  # (so user-app containers can connect to their per-project DATABASE_URL).
+  user-postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${USER_POSTGRES_ADMIN_USER:-velveteen_admin}
+      POSTGRES_PASSWORD: ${USER_POSTGRES_ADMIN_PASSWORD}
+      POSTGRES_DB: postgres
+    volumes:
+      - user-pgdata:/var/lib/postgresql/data
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_POSTGRES_ADMIN_USER:-velveteen_admin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+      - apps
+
+volumes:
+  user-pgdata:
+
+networks:
+  default:
+    name: infra
+    external: true
+  apps:
+    name: velveteen-network
+    external: true
