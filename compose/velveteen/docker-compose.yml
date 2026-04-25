@@ -50,8 +50,12 @@ services:
       - /etc/caddy/sites:/etc/caddy/sites
     mem_limit: 1g
     cpus: 1.0
+    # Attached to both networks: `default` (infra) for its own Postgres and
+    # admin access to user-postgres; `apps` (velveteen-network) so the
+    # readiness probe can DNS-resolve user-app containers by name after deploy.
     networks:
       - default
+      - apps
 
   # Shared Postgres instance for user-app databases. Separate from the main
   # `postgres` service (which holds Velveteen's own operational data) to keep
